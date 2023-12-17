@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Todo App</title>
+    <script>
+      function parsedResponsse(data) {
+        let placeholder = document.querySelector("#data-output");
+        let out = "";
+        for (let task of data) {
+          out += ` 
+                   <tr>
+                    <td>${task.title}</td>
+                    <td>${task.Discription}</td>
+                    <td><button onclick="deleteTask(${task.id})">Completed</button></td>
+                    <td><button onclick="updateTask('${task.id}','${task.title}','${task.Discription}')">Update</button></td>
+                   </tr>               
+                `;
+        }
+        placeholder.innerHTML = out;
+      }
+      function callback(resp) {
+        resp.json().then(parsedResponsse);
+      }
+      function GetAllTasks() {
+        fetch("http://localhost:3000/todos", {
+          method: "GET",
+        }).then(callback);
+      }
+      async function deleteTask(id) {
+        let data = await fetch(`http://localhost:3000/todos/${id}`, {
+          method: "DELETE",
+        });
+        GetAllTasks();
+      }
+
+      GetAllTasks();
+
+      async function updateDB(id) {
+        const title = document.querySelector("#updatedTitle");
+        const description = document.querySelector("#updatedDescription");
+        try {
+          let data = await fetch(`http://localhost:3000/todos/${id}`, {
+            method: "PUT",
+            body: JSON.stringify({
+              id: id,
+              title: title.value,
+              Discription: description.value,
+            }),
+            headers: {
+              "Content-Type": "application/json",
+            },
+          });
+        } catch (err) {
+          console.log(err);
+        }
+
+        GetAllTasks();
+      }
+      function updateTask(id, title, description) {
+        let placeholder = document.querySelector("#update");
+        let out = "";
+        out += `<h2>Update Task</h2>`;
+        out += "Title";
+        out += `<input type="text"  id="updatedTitle" value="${title}" />`;
+        out += "<br>";
+        out += "Discription";
+        out += `<input type="textarea"  id="updatedDescription" value="${description}"/>`;
+        out += `<button onclick="updateDB('${id}')">Update</button>`;
+        placeholder.innerHTML = out;
+      }
+      async function onPress() {
+        const title = document.getElementById("title");
+        const Discription = document.getElementById("description");
+        let data = await fetch("http://localhost:3000/todos", {
+          method: "POST",
+          body: JSON.stringify({
+            title: title.value,
+            Discription: Discription.value,
+          }),
+          headers: {
+            "Content-Type": "application/json",
+          },
+        });
+        // <!-- data=await data.json(); -->
+        GetAllTasks();
+        //console.log(data);
+      }
+    </script>
+    <style>
+      body {
+        font-family: sans-serif;
+        margin: 20px;
+      }
+
+      h2 {
+        font-size: 1.5em;
+        margin-bottom: 10px;
+      }
+
+      input {
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        margin-right: 10px;
+        width: fit-content;
+      }
+
+      button {
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        background-color: #333;
+        color: #fff;
+        cursor: pointer;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+      }
+
+      th,
+      td {
+        padding: 5px;
+        border: 1px solid #ddd;
+      }
+
+      th {
+        font-weight: bold;
+      }
+
+      #update {
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin: 20px auto;
+        width: 50%;
+      }
+
+      #update h2 {
+        margin-bottom: 10px;
+        text-align: center;
+      }
+
+      #update label {
+        display: block;
+        margin-bottom: 5px;
+      }
+
+      #update input,
+      #update textarea {
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 100%;
+      }
+
+      #update #updatedDescription {
+        height: 100px;
+      }
+
+      #update button {
+        display: block;
+        margin-top: 10px;
+        padding: 5px 10px;
+        border: none;
+        border-radius: 4px;
+        background-color: #333;
+        color: #fff;
+        cursor: pointer;
+      }
+      #AddTask {
+        padding: 20px;
+        border: 1px solid #ddd;
+        border-radius: 4px;
+        margin: 20px auto;
+        width: 50%;
+      }
+      #AddTask input,
+      #AddTask textarea {
+        padding: 5px;
+        border: 1px solid #ccc;
+        border-radius: 4px;
+        width: 100%;
+      }
+
+      #AddTask button:hover {
+        background-color: #444;
+      }
+      #update button:hover {
+        background-color: #444;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="AddTask">
+      <h2>Add Task</h2>
+      Todo title
+      <input type="text" id="title" />
+
+      Todo description
+      <input type="text" id="description" />
+
+      <button onclick="onPress()">send todo</button>
+    </div>
+    <br />
+    <br />
+    <table>
+      <thead>
+        <tr>
+          <th>Title</th>
+          <th>Description</th>
+          <th>Completed ?</th>
+          <th>Update ?</th>
+        </tr>
+      </thead>
+      <tbody id="data-output"></tbody>
+    </table>
+    <br />
+    <br />
+
+    <div id="update"></div>
+  </body>
+</html>
